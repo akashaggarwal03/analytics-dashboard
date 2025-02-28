@@ -27,17 +27,15 @@ async def upload_generate_dashboard(search_history: UploadFile, watch_history: U
         search_content = await search_history.read()
         watch_content = await watch_history.read()
 
-        # Parallel parsing
         loop = asyncio.get_event_loop()
         search_task = loop.run_in_executor(executor, parse_search_history, search_content)
         watch_task = loop.run_in_executor(executor, parse_watch_history, watch_content)
         search_df, watch_df = await asyncio.gather(search_task, watch_task)
 
-        # Process features incrementally
         peak_service = PeakTimeService()
         peak_times = peak_service.calculate(watch_df)
         await broadcast_data({"type": "peak_times", "data": peak_times})
 
-        return {"status": "Processing started, check WebSocket for updates"}
+        return {"status": "Processing started, check WebSocket /ws for updates"}
     except Exception as e:
-        return {"error": str(e)}, 500
+        return {"status": "error", "error": str(e)}, 500

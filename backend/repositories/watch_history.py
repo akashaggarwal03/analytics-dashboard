@@ -14,7 +14,10 @@ def parse_watch_history(content: bytes) -> pl.DataFrame:
         if "title" in entry and "Watched " in entry["title"] and "titleUrl" in entry
     ]
     df = pl.DataFrame(watches)
-    return df.with_columns(
-        pl.col("timestamp")
-        .str.strptime(pl.Datetime, "%Y-%m-%dT%H:%M:%S%.fZ", strict=False)  # Handle optional microseconds
+    df = df.with_columns(
+        pl.col("timestamp").str.strptime(pl.Datetime, "%Y-%m-%dT%H:%M:%S%.fZ", strict=False)
+    ).with_columns(
+        pl.col("timestamp").dt.weekday().alias("day_of_week")  # 1 = Monday, 7 = Sunday
     )
+    print("Parsed days of week:", df["day_of_week"].to_list())
+    return df

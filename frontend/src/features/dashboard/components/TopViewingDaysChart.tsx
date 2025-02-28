@@ -21,70 +21,50 @@ interface TopViewingDaysChartProps {
 }
 
 export const TopViewingDaysChart: React.FC<TopViewingDaysChartProps> = ({ data }) => {
-  const years = useMemo(() => [...new Set(data.year)], [data]);
+  const years = useMemo(() => [...new Set(data.day_of_week_year)], [data]);
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
 
-  // Step 1: Calculate counts for each day of the week for each year
-  const countsByYear = useMemo(() => {
-    const countsByYear: { [year: number]: { [day: number]: number } } = {};
-    const allCounts: { [day: number]: number } = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-
-    // Initialize counts for each year
-    years.forEach((year) => {
-      countsByYear[year] = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  // Step 1: Calculate top 5 days across all years
+  const globalTopDays = useMemo(() => {
+    const counts: { [day: number]: number } = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+    data.day_of_week.forEach((day, idx) => {
+      counts[day] += data.day_of_week_count[idx];
     });
 
-    // Calculate counts for each year
-    data.hour.forEach((hour, idx) => {
-      const year = data.year[idx];
-      const count = data.watch_count[idx];
+    const sortedDays = Object.entries(counts)
+      .map(([day, count]) => ({ day: Number(day), count }));
 
-      // Pseudo-random day within the year to approximate day of week distribution
-      // Use a deterministic pseudo-random day based on index to avoid re-computation issues
-      const pseudoDay = (idx % 365) + 1; // Spread across 365 days of the year
-      const pseudoDate = new Date(year, 0, pseudoDay);
-      pseudoDate.setHours(hour);
-      const dayOfWeek = pseudoDate.getDay();
-      countsByYear[year][dayOfWeek] += count;
-      allCounts[dayOfWeek] += count;
-    });
+    console.log('Global top 5 days:', sortedDays);
+    return sortedDays.map((d) => d.day);
+  }, [data]);
 
-    // Calculate counts for each day for each year
-    const result: { [year: string]: { day: number; count: number }[] } = {};
-    Object.entries(countsByYear).forEach(([year, counts]) => {
-      result[year] = Object.entries(counts)
-        .map(([day, count]) => ({ day: Number(day), count }))
-        .sort((a, b) => a.day - b.day); // Sort by day for consistent display
-    });
-
-    // Calculate counts for "All Years"
-    result['all'] = Object.entries(allCounts)
-      .map(([day, count]) => ({ day: Number(day), count }))
-      .sort((a, b) => a.day - b.day);
-
-    console.log('Counts by year:', result);
-    return result;
-  }, [data, years]);
-
-  // Step 2: Get counts for the selected year
+  // Step 2: Calculate counts for the selected year, for the top 5 days
   const dayCounts = useMemo(() => {
-    const result = countsByYear[selectedYear];
-    console.log(`Day counts for ${selectedYear}:`, result);
+    const counts: { [day: number]: number } = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+    data.day_of_week.forEach((day, idx) => {
+      if (selectedYear === 'all' || data.day_of_week_year[idx] === selectedYear) {
+        counts[day] += data.day_of_week_count[idx];
+      }
+    });
+
+    const result = globalTopDays.map((day) => ({
+      day,
+      count: counts[day],
+    }));
+
     return result;
-  }, [selectedYear, countsByYear]);
+  }, [data, selectedYear, globalTopDays]);
 
   const chartData = useMemo(() => {
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const sortedCounts = [...dayCounts].sort((a, b) => b.count - a.count); // Sort by count for highlighting
-    const maxCount = Math.max(...sortedCounts.map((d) => d.count));
+    const dayNames = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; // Adjust for 1-7
     return {
       labels: dayCounts.map((d) => dayNames[d.day]),
       datasets: [
         {
-          label: 'Viewing Days',
+          label: 'Top Viewing Days',
           data: dayCounts.map((d) => d.count),
-          backgroundColor: dayCounts.map((d) =>
-            d.count === maxCount && d.count > 0 ? 'rgba(75, 192, 192, 0.7)' : 'rgba(75, 192, 192, 0.4)'
+          backgroundColor: dayCounts.map((d, idx) =>
+            idx === 0 ? 'rgba(75, 192, 192, 0.7)' : 'rgba(75, 192, 192, 0.4)'
           ),
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1,
