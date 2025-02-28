@@ -57,32 +57,16 @@ export const PeakTimesGraph: React.FC<PeakTimesGraphProps> = ({ data }) => {
       night: { hours: [19, 20, 21, 22, 23], count: 0, label: 'night' },
     };
 
-    if (selectedYear === 'all') {
-      data.hour.forEach((hour, idx) => {
-        const count = data.watch_count[idx];
+    data.hour.forEach((hour, idx) => {
+      const count = data.watch_count[idx];
+      const yearMatches = selectedYear === 'all' || data.year[idx] === selectedYear;
+      if (yearMatches) {
         if (zones.lateNight.hours.includes(hour)) zones.lateNight.count += count;
         else if (zones.morning.hours.includes(hour)) zones.morning.count += count;
         else if (zones.afternoon.hours.includes(hour)) zones.afternoon.count += count;
         else if (zones.night.hours.includes(hour)) zones.night.count += count;
-      });
-    } else {
-      data.hour.forEach((hour, idx) => {
-        if (data.year[idx] === selectedYear) {
-          const count = data.watch_count[idx];
-          if (zones.lateNight.hours.includes(hour)) zones.lateNight.count += count;
-          else if (zones.morning.hours.includes(hour)) zones.morning.count += count;
-          else if (zones.afternoon.hours.includes(hour)) zones.afternoon.count += count;
-          else if (zones.night.hours.includes(hour)) zones.night.count += count;
-        }
-      });
-
-      console.log(`Zone counts for ${selectedYear}:`, {
-        lateNight: zones.lateNight.count,
-        morning: zones.morning.count,
-        afternoon: zones.afternoon.count,
-        night: zones.night.count,
-      });
-    }
+      }
+    });
 
     const total = Object.values(zones).reduce((sum, zone) => sum + zone.count, 0);
     if (total === 0) return selectedYear === 'all' ? "No watch data available." : `No watch data for ${selectedYear}.`;
@@ -98,6 +82,7 @@ export const PeakTimesGraph: React.FC<PeakTimesGraphProps> = ({ data }) => {
 
   const options: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       x: {
         type: 'category',
@@ -140,7 +125,9 @@ export const PeakTimesGraph: React.FC<PeakTimesGraphProps> = ({ data }) => {
       >
         {insight}
       </Typography>
-      <Line data={chartData} options={options} />
+      <Box sx={{ height: '300px' }}>
+        <Line data={chartData} options={options} />
+      </Box>
     </Box>
   );
 };
