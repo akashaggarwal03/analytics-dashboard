@@ -1,11 +1,21 @@
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI
+from routers import dashboard
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+app = FastAPI(title="YouTube Analytics Dashboard")
+
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend origin
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
+
+app.include_router(dashboard.router)
 
 @app.get("/")
 async def root():
     return {"message": "YouTube Analytics Dashboard Backend"}
-
-@app.post("/upload-generate-dashboard")
-async def upload_generate_dashboard(search_history: UploadFile, watch_history: UploadFile):
-    return {"status": "Files received", "search_filename": search_history.filename, "watch_filename": watch_history.filename}
