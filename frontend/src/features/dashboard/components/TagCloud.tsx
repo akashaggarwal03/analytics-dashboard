@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 
 // Define the Datum type for tag data
-interface Datum {
+export interface Datum {
   text: string;
   value: number;
   rotate?: number;

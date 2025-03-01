@@ -1,53 +1,31 @@
-import React, { useState, useEffect, useMemo } from 'react';
-
-
+import React, { useState } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
-import { motion } from 'framer-motion';
-
-import { useWebSocketContext } from 'shared/context/WebSocketContext';
-import { PeakTimesData, WordCloudData } from 'shared/types/shared.types';
+import { PeakTimesData } from 'shared/types/shared.types';
 import { TopViewingDaysChart } from './TopViewingDaysChart';
 import { PeakTimesGraph } from './PeakTimesGraph';
 import { DashboardLayout } from './DashboardLayout';
 import { FileUpload } from 'features/upload/components/FileUpload';
-import {  MemoryLane } from './MemoryLane';
-import { TagCloud } from './TagCloud';
+import { MemoryLane } from './MemoryLane';
+import { Datum, TagCloud } from './TagCloud';
 import { Instructions } from './Instructions';
 
 export const Dashboard: React.FC = () => {
   const [peakTimesData, setPeakTimesData] = useState<PeakTimesData | null>(null);
-  const [wordCloudData, setWordCloudData] = useState<WordCloudData | null>(null);
-  const { lastMessage } = useWebSocketContext();
+  const [wordCloudData, setWordCloudData] = useState<Datum[]>([]);
 
-  useEffect(() => {
-    if (lastMessage) {
-      console.log('Received WebSocket message:', lastMessage);
-      if (lastMessage.type === 'peak_times') {
-        setPeakTimesData(lastMessage.data as PeakTimesData);
-      } else if (lastMessage.type === 'word_cloud') {
-        setWordCloudData(lastMessage.data as WordCloudData);
-      }
-    }
-  }, [lastMessage]);
+  const totalVideosWatched = peakTimesData
+    ? peakTimesData.watch_count.reduce((sum, count) => sum + count, 0)
+    : 0;
 
-  // Convert wordCloudData to the format expected by react-d3-cloud (now TagCloud)
-  const wordCloudArray = useMemo(() => {
-    if (!wordCloudData) return [];
-    return Object.entries(wordCloudData).map(([text, value]) => ({
-      text,
-      value,
-    }));
-  }, [wordCloudData]);
-
-  const totalVideosWatched = useMemo(() => {
-    if (!peakTimesData) return 0;
-    return peakTimesData.watch_count.reduce((sum, count) => sum + count, 0);
-  }, [peakTimesData]);
+  const handleUploadComplete = (peakTimesData: PeakTimesData, wordCloudData: Datum[]) => {
+    setPeakTimesData(peakTimesData);
+    setWordCloudData(wordCloudData);
+  };
 
   return (
     <DashboardLayout>
-      <Instructions/>
-      <FileUpload />
+      <Instructions />
+      <FileUpload onUploadComplete={handleUploadComplete} />
       {peakTimesData && (
         <Box sx={{ mt: 4 }}>
           <Typography
@@ -82,8 +60,8 @@ export const Dashboard: React.FC = () => {
             favoriteCreatorName={peakTimesData.favorite_creator_name}
             favoriteCreatorWatchCount={peakTimesData.favorite_creator_watch_count}
           />
-          {wordCloudData && (
-            <TagCloud data={wordCloudArray} />
+          {wordCloudData.length > 0 && (
+            <TagCloud data={wordCloudData} />
           )}
         </Box>
       )}
