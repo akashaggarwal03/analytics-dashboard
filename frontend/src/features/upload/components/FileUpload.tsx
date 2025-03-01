@@ -65,7 +65,7 @@ const StyledSubmitButton = styled('button')({
   },
 });
 
-const API_URL = 'http://127.0.0.1:8000/dashboard/upload-generate-dashboard';
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'; // Use env variable with fallback
 
 interface FileUploadProps {
   onUploadStart?: () => void;

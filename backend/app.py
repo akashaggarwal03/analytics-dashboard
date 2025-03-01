@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from routers import dashboard
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
 app = FastAPI(title="YouTube Analytics Dashboard")
 
@@ -19,3 +20,7 @@ app.include_router(dashboard.router)
 @app.get("/")
 async def root():
     return {"message": "YouTube Analytics Dashboard Backend"}
+
+# Vercel serverless handler
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
