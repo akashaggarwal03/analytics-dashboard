@@ -1,7 +1,6 @@
 from fastapi import APIRouter, UploadFile, WebSocket
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
-from repositories.search_history import parse_search_history
 from repositories.watch_history import parse_watch_history
 from services.peak_time import PeakTimeService
 from utils.websocket import broadcast_data
@@ -22,15 +21,12 @@ async def websocket_endpoint(websocket: WebSocket):
         connected_clients.remove(websocket)
 
 @router.post("/upload-generate-dashboard")
-async def upload_generate_dashboard(search_history: UploadFile, watch_history: UploadFile):
+async def upload_generate_dashboard(watch_history: UploadFile):
     try:
-        search_content = await search_history.read()
         watch_content = await watch_history.read()
 
         loop = asyncio.get_event_loop()
-        search_task = loop.run_in_executor(executor, parse_search_history, search_content)
-        watch_task = loop.run_in_executor(executor, parse_watch_history, watch_content)
-        search_df, watch_df = await asyncio.gather(search_task, watch_task)
+        watch_df = await loop.run_in_executor(executor, parse_watch_history, watch_content)
 
         peak_service = PeakTimeService()
         peak_times = peak_service.calculate(watch_df)
