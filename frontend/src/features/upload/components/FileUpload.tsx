@@ -84,7 +84,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onUploadStart }) => {
     formData.append('watch_history', watchRef.current.files[0]);
 
     try {
-      await axios.post(API_URL, formData, {
+      await axios.post(API_URL+"/dashboard/upload-generate-dashboard", formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       onUploadStart?.();
