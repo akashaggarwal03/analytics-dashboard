@@ -19,9 +19,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://analytics-dashboard-frontend.onrender.com",
-        "https://yourdomain.com",
-        "https://www.yourdomain.com",
+        "https://analytics-dashboard-frontend-3yj3.onrender.com"
     ],
     allow_credentials=True,
     allow_methods=["*"],
