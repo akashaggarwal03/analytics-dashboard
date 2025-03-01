@@ -9,7 +9,7 @@ app = FastAPI(title="YouTube Analytics Dashboard")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://analytics-dashboard-frontend-one.vercel.app/"],  # Frontend origin
+    allow_origins=["http://localhost:3000", "https://analytics-dashboard-frontend-3yj3.onrender.com"],  # Frontend origin
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
