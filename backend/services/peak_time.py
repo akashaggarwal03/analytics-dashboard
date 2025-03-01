@@ -16,11 +16,24 @@ class PeakTimeService:
             .sort(["year", "day_of_week"])
         )
 
-        # Extract first video URL, title, and timestamp from the DataFrame
+        # Extract first video details from the DataFrame
         first_video_row = watch_df.filter(pl.col("first_video_url").is_not_null()).head(1)
         first_video_url = first_video_row["first_video_url"][0] if not first_video_row.is_empty() else None
         first_video_title = first_video_row["first_video_title"][0] if not first_video_row.is_empty() else None
         first_video_timestamp = first_video_row["first_video_timestamp"][0] if not first_video_row.is_empty() else None
+
+        # Extract most rewatched video details from the DataFrame
+        most_rewatched_row = watch_df.filter(pl.col("most_rewatched_url").is_not_null()).head(1)
+        most_rewatched_url = most_rewatched_row["most_rewatched_url"][0] if not most_rewatched_row.is_empty() else None
+        most_rewatched_title = most_rewatched_row["most_rewatched_title"][0] if not most_rewatched_row.is_empty() else None
+        most_rewatched_timestamp = most_rewatched_row["most_rewatched_timestamp"][0] if not most_rewatched_row.is_empty() else None
+        rewatch_count = most_rewatched_row["rewatch_count"][0] if not most_rewatched_row.is_empty() else 0
+
+        # Extract favorite creator details from the DataFrame
+        favorite_creator_row = watch_df.filter(pl.col("favorite_creator_url").is_not_null() & (pl.col("favorite_creator_url") != "")).head(1)
+        favorite_creator_url = favorite_creator_row["favorite_creator_url"][0] if not favorite_creator_row.is_empty() else None
+        favorite_creator_name = favorite_creator_row["favorite_creator_name"][0] if not favorite_creator_row.is_empty() else None
+        favorite_creator_watch_count = favorite_creator_row["favorite_creator_watch_count"][0] if not favorite_creator_row.is_empty() else 0
 
         result = {
             "year": peak_times["year"].to_list(),
@@ -31,7 +44,14 @@ class PeakTimeService:
             "day_of_week_count": day_counts["watch_count"].to_list(),
             "first_video_url": first_video_url,
             "first_video_title": first_video_title,
-            "first_video_timestamp": first_video_timestamp.isoformat() if first_video_timestamp else None  # Convert to ISO string
+            "first_video_timestamp": first_video_timestamp.isoformat() if first_video_timestamp else None,
+            "most_rewatched_url": most_rewatched_url,
+            "most_rewatched_title": most_rewatched_title,
+            "most_rewatched_timestamp": most_rewatched_timestamp.isoformat() if most_rewatched_timestamp else None,
+            "rewatch_count": int(rewatch_count),
+            "favorite_creator_url": favorite_creator_url,
+            "favorite_creator_name": favorite_creator_name,
+            "favorite_creator_watch_count": int(favorite_creator_watch_count)
         }
-        print("Peak times data:", result)
+        # print("Peak times data:", result)
         return result

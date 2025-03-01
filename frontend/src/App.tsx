@@ -3,6 +3,7 @@ import { Box } from '@mui/material';
 import  Footer  from './shared/components/Footer';
 import Header from 'shared/components/Header';
 import { Dashboard } from 'features/dashboard/components/Dashboard';
+import './index.css';
 
 const App: React.FC = () => {
   return (
